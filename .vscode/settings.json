@@ -1,0 +1,8 @@
+{
+  "editor.formatOnSave": true,
+  "cSpell.words": ["aftersales", "bgcolor", "Singlife", "testid"],
+  "search.exclude": {
+    "**/node_modules": false
+  },
+  "search.useIgnoreFiles": false
+}
