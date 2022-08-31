@@ -1,6 +1,8 @@
 import { ViewStyle } from 'react-native';
 
 declare global {
+  type State<T> = React.Dispatch<React.SetStateAction<T>>;
+
   /* --------------------------------- DIV-MAP -------------------------------- */
 
   type DivValue = ViewStyle & { children?: DivProps };
@@ -37,4 +39,6 @@ declare global {
   type Overlays = {
     [key: string]: Overlay;
   };
+
+  /* ----------------------------------- ETC ---------------------------------- */
 }

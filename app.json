@@ -19,6 +19,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.lawrence.css_warrior",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -26,6 +28,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a7fdecbe-5498-4362-804f-646fab2f0b8c"
+      }
     }
   }
 }

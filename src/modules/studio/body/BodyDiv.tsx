@@ -1,61 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable } from 'react-native';
-import {
-  Hint,
-  HintProps,
-  Text,
-  View,
-  ViewProps,
-  Colors,
-  TouchableOpacity,
-  GridList,
-} from 'react-native-ui-lib';
-import { Ionicons, MaterialCommunityIcons, Octicons, FontAwesome5 } from '@expo/vector-icons';
-import useAppStore from 'src/store/useAppStore';
-import { useCanvasStore } from 'src/store';
+import { Hint, Text, View, ViewProps, TouchableOpacity } from 'react-native-ui-lib';
 import AppTextField from 'src/components/AppTextField';
-import * as viewStyles from 'src/static/styles';
-import StyleSheet from './StyleSheet';
+import { useCanvasStore } from 'src/store';
 
-type SetOpen = React.Dispatch<React.SetStateAction<boolean>>;
-
-interface HinterProps {
-  text: JSX.Element;
-  setOpen?: SetOpen;
-  content: JSX.Element;
-  open?: boolean;
-}
-
-const Hinter = ({ text, setOpen, content, open, ...props }: HinterProps & HintProps) => {
-  const [focused, setFocused] = useState(false);
-  const toggleHint = (bool: boolean) => {
-    setFocused(bool);
-    setOpen?.(bool);
-  };
-
-  useEffect(() => {
-    if (open === false) {
-      toggleHint(false);
-    }
-  }, [open]);
-
-  return (
-    <Hint
-      position="top"
-      removePaddings
-      style={{ padding: 4 }}
-      visible={focused}
-      customContent={content}
-      useSideTip={false}
-      onBackgroundPress={() => toggleHint(false)}
-      {...props}
-    >
-      <TouchableOpacity onPress={() => toggleHint(true)} style={{ zIndex: 999 }}>
-        {text}
-      </TouchableOpacity>
-    </Hint>
-  );
-};
+type SetOpen = React.Dispatch<React.SetStateAction<string | null>>;
 
 interface ControlsProps {
   id: string;
@@ -64,14 +14,23 @@ interface ControlsProps {
   name: string;
 }
 
-const Controls = ({ id, ids, setOpen, name }: ControlsProps) => {
+const hintProps = {
+  position: 'top',
+  removePaddings: true,
+  borderRadius: 10,
+  useSideTip: false,
+};
+
+const Controls = ({ setOpen, name }: ControlsProps) => {
   const iconStyles = { size: 40, color: 'white' };
-  const { addDiv, editDiv, deleteDiv, duplicateDiv, setActiveDivId, setActiveDivIds } =
-    useCanvasStore();
-  const { openOverlay } = useAppStore();
+  const { addDiv, editDiv, deleteDiv, duplicateDiv, setStyleSheetOpen } = useCanvasStore();
   const [addDivName, setAddDivName] = useState<string>('div');
   const [editName, setEditName] = useState<string>(name);
   const isEdited = editName !== name;
+  const positions: DivPosition[] = ['above', 'inside', 'below'];
+  const [editOpen, setEditOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [isOpeningStyleSheet, setIsOpeningStyleSheet] = useState<boolean>(false);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -80,18 +39,19 @@ const Controls = ({ id, ids, setOpen, name }: ControlsProps) => {
           name="duplicate"
           {...iconStyles}
           onPress={() => {
-            duplicateDiv(id, ids, name);
-            setOpen(false);
+            duplicateDiv(name);
+            setOpen(null);
           }}
         />
-        <Hinter
-          borderRadius={10}
-          text={<MaterialCommunityIcons name="view-dashboard-edit-outline" {...iconStyles} />}
-          content={
+        <Hint
+          {...hintProps}
+          visible={editOpen}
+          onBackgroundPress={() => setEditOpen(false)}
+          customContent={
             <View row paddingB-5 width={220}>
               <MaterialCommunityIcons
                 name="delete-outline"
-                onPress={() => deleteDiv(ids)}
+                onPress={() => deleteDiv()}
                 {...iconStyles}
               />
               <View style={{ flex: 1 }}>
@@ -103,7 +63,7 @@ const Controls = ({ id, ids, setOpen, name }: ControlsProps) => {
                   maxLength={20}
                 />
               </View>
-              <Pressable disabled={!isEdited} onPress={() => editDiv(id, ids, { name: editName })}>
+              <Pressable disabled={!isEdited} onPress={() => editDiv({ name: editName })}>
                 <MaterialCommunityIcons
                   name="check-circle-outline"
                   {...iconStyles}
@@ -112,34 +72,24 @@ const Controls = ({ id, ids, setOpen, name }: ControlsProps) => {
               </Pressable>
             </View>
           }
-        />
+        >
+          <TouchableOpacity onPress={() => setEditOpen(true)}>
+            <MaterialCommunityIcons name="view-dashboard-edit-outline" {...iconStyles} />
+          </TouchableOpacity>
+        </Hint>
         <MaterialCommunityIcons
           name="image-edit-outline"
-          {...iconStyles}
           onPress={() => {
-            setActiveDivId(id);
-            setActiveDivIds(ids);
-            openOverlay({
-              content: (
-                <GridList
-                  data={Object.entries({ ...viewStyles, close: {} })}
-                  renderItem={({ item }) => <StyleSheet key={item[0]} item={item} />}
-                  inverted
-                  numColumns={3}
-                  maxItemWidth={140}
-                  itemSpacing={0}
-                />
-              ),
-              id: 'style-sheet',
-              type: 'bottom-sheet',
-            });
-            setOpen(false);
+            setStyleSheetOpen(true);
+            setIsOpeningStyleSheet(true);
           }}
+          {...iconStyles}
         />
-        <Hinter
-          borderRadius={10}
-          text={<Octicons name="diff-added" {...iconStyles} />}
-          content={
+        <Hint
+          {...hintProps}
+          visible={addOpen}
+          onBackgroundPress={() => setAddOpen(false)}
+          customContent={
             <View>
               <View paddingH-10>
                 <AppTextField
@@ -155,23 +105,27 @@ const Controls = ({ id, ids, setOpen, name }: ControlsProps) => {
                 />
               </View>
               <View row paddingB-5 paddingH-10 width={220} spread>
-                {['above', 'inside', 'below'].map((place) => (
+                {positions.map((position) => (
                   <Text
-                    key={place}
+                    key={position}
                     white
                     text70
                     onPress={() => {
-                      addDiv(id, ids, place as DivPosition, addDivName);
-                      setOpen(false);
+                      addDiv(position, addDivName);
+                      setOpen(null);
                     }}
                   >
-                    {place}
+                    {position}
                   </Text>
                 ))}
               </View>
             </View>
           }
-        />
+        >
+          <TouchableOpacity onPress={() => setAddOpen(true)}>
+            <Octicons name="diff-added" {...iconStyles} />
+          </TouchableOpacity>
+        </Hint>
       </View>
     </KeyboardAvoidingView>
   );
@@ -183,42 +137,60 @@ interface Props extends ViewProps {
   ids?: string[];
 }
 
-export default function BodyDiv({ value, id, ids = [] }: Props) {
-  const [hintOpen, setHintOpen] = useState(false);
+export default function BodyDiv2({ value, id, ids = [] }: Props) {
+  const [hintOpen, setHintOpen] = useState<string | null>(null);
   const { children, name } = value;
   const hasChildren = children.size > 0;
+  const { activeDivIds, setActiveDivId, setActiveDivIds, styleSheetOpen } = useCanvasStore();
+
   ids = [...ids, id];
+
+  const handleClose = () => {
+    setHintOpen(null);
+    setActiveDivId(null);
+    setActiveDivIds([]);
+  };
+
+  const handleOpen = (str: string) => {
+    setHintOpen(str);
+    setActiveDivId(id);
+    setActiveDivIds(ids);
+  };
+
+  const isActive = hintOpen && JSON.stringify(activeDivIds) == JSON.stringify(ids);
 
   return (
     <View paddingL-10>
-      <Hinter
-        borderRadius={10}
-        open={hintOpen}
-        setOpen={setHintOpen}
-        content={<Controls {...{ id, ids, name: name as string }} setOpen={setHintOpen} />}
-        text={
-          <Text cyan50 green30={hintOpen} bg-grey70={hintOpen} text70>
+      <Hint
+        {...hintProps}
+        visible={hintOpen === 'top' && !styleSheetOpen}
+        onBackgroundPress={() => handleClose()}
+        customContent={<Controls {...{ id, ids, name: name as string }} setOpen={setHintOpen} />}
+      >
+        <TouchableOpacity onPress={() => handleOpen('top')}>
+          <Text cyan50 green30={isActive} bg-grey20={isActive} text70>
             {`<${name}>`}
           </Text>
-        }
-      />
+        </TouchableOpacity>
+      </Hint>
 
       {hasChildren &&
         Array.from(children as DivMap).map(([key, value]) => (
-          <BodyDiv key={key} id={key} value={value} ids={ids} />
+          <BodyDiv2 key={key} id={key} value={value} ids={ids} />
         ))}
 
-      <Hinter
-        borderRadius={10}
-        open={hintOpen}
-        setOpen={setHintOpen}
-        text={
-          <Text cyan50 green30={hintOpen} bg-grey70={hintOpen} text70>
+      <Hint
+        {...hintProps}
+        visible={hintOpen === 'bottom' && !styleSheetOpen}
+        onBackgroundPress={() => handleClose()}
+        customContent={<Controls {...{ id, ids, name: name as string }} setOpen={setHintOpen} />}
+      >
+        <TouchableOpacity onPress={() => handleOpen('bottom')}>
+          <Text cyan50 green30={isActive} bg-grey20={isActive} text70>
             {`</${name}>`}
           </Text>
-        }
-        content={<Controls {...{ id, ids, name: name as string }} setOpen={setHintOpen} />}
-      />
+        </TouchableOpacity>
+      </Hint>
     </View>
   );
 }

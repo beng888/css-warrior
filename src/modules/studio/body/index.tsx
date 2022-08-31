@@ -1,18 +1,11 @@
-import { ActionSheet, GridList, View } from 'react-native-ui-lib';
-import * as viewStyles from 'src/static/styles';
-import StyleSheet from './StyleSheet';
+import { View } from 'react-native-ui-lib';
 import BodyDiv from './BodyDiv';
 import { useCanvasStore } from 'src/store';
 import AppButton from 'src/components/AppButton';
 
 export default function Body({ ...props }) {
-  const { body, addFirstDiv, setActiveDivId, setActiveDivIds, activeDivId, activeDivIds } =
-    useCanvasStore();
-
-  const resetActiveDiv = () => {
-    setActiveDivId(null);
-    setActiveDivIds([]);
-  };
+  const { body, addFirstDiv } = useCanvasStore();
+  // console.log('%c⧭', 'color: #aa00ff', { body });
 
   return (
     <View {...props}>
@@ -27,21 +20,6 @@ export default function Body({ ...props }) {
           <AppButton onPress={() => addFirstDiv()} label="Click here to add your first div!" />
         </View>
       )}
-      <ActionSheet
-        renderTitle={() => (
-          <GridList
-            data={Object.entries({ ...viewStyles, close: {} })}
-            renderItem={({ item }) => <StyleSheet key={item[0]} item={item} />}
-            inverted
-            numColumns={3}
-            maxItemWidth={140}
-            itemSpacing={0}
-          />
-        )}
-        // visible={activeDivId}
-        onDismiss={() => resetActiveDiv()}
-        destructiveButtonIndex={0}
-      />
     </View>
   );
 }

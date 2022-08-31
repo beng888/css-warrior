@@ -1,10 +1,12 @@
+import uuid from 'react-native-uuid';
+
 type DivType = DivMap | DivMapValue;
 
 export function getInMap(data: DivType, [prop, ...rest]: string[]): DivType {
-  if (prop !== undefined) {
+  if (!!prop) {
     if (data instanceof Map && data.has(prop)) {
       const _data = data.get(prop);
-      if (_data !== undefined) {
+      if (!!_data) {
         const newData: DivMapValue = _data;
         if (rest.length) return getInMap(newData, rest);
         return newData;
@@ -23,7 +25,7 @@ export function getInMap(data: DivType, [prop, ...rest]: string[]): DivType {
 export function setInMap(data: DivType, [prop, ...rest]: string[], value: DivMap): DivType {
   let newData: DivType = data;
 
-  if (prop !== undefined) {
+  if (!!prop) {
     if (data instanceof Map && data.has(prop)) {
       newData = data as DivMap;
       const newValue = rest.length ? setInMap(data.get(prop) as DivMapValue, rest, value) : value;
@@ -39,10 +41,18 @@ export function setInMap(data: DivType, [prop, ...rest]: string[], value: DivMap
   return newData;
 }
 
+// export function setIn(data: any = {}, [prop, ...rest]: (string | number)[], value: any) {
+//   const newData: any = Array.isArray(data) ? [...data] : { ...data };
+//   if (prop !== undefined) {
+//     newData[prop as keyof typeof newData] = rest.length ? setIn(data[prop], rest, value) : value;
+//   }
+//   return newData;
+// }
+
 export function deleteInMap(data: DivType, [prop, ...rest]: string[]): DivType {
   let newData: DivType = data;
 
-  if (prop !== undefined) {
+  if (!!prop) {
     if (data instanceof Map && data.has(prop)) {
       newData = data as DivMap;
       rest.length
@@ -56,6 +66,32 @@ export function deleteInMap(data: DivType, [prop, ...rest]: string[]): DivType {
     }
   }
   return newData;
+}
+
+export function deDupDiv(div: DivMap) {
+  return new Map(
+    Array.from(div).map(([, value]) => {
+      if (value.children.size > 0) {
+        const newValue: DivMap = deDupDiv(value.children);
+        return [uuid.v4(), { ...value, children: newValue }];
+      }
+
+      return [uuid.v4(), value];
+    }) as Iterable<[string, DivMapValue]>,
+  );
+}
+
+export function flattenMap(map: DivMap) {
+  const flattenedArray: unknown[] = Array.from(map)
+    .map(([key, value]) => {
+      const { children, ...rest } = value;
+      if (children.size > 0) {
+        return [[[key, rest]], [...flattenMap(children)]];
+      }
+      return [[[key, rest]]];
+    })
+    .flat(2);
+  return new Map(flattenedArray as Iterable<[string, DivMapValue]>);
 }
 
 export function insertAtMapIndex(

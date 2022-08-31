@@ -1,4 +1,4 @@
-import { Dimensions, ScrollView, Image, Pressable } from 'react-native';
+import { Dimensions, ScrollView, Image, Pressable, Keyboard, KeyboardEvent } from 'react-native';
 import { View } from 'react-native-ui-lib';
 import Body from './body';
 import Canvas from './canvas';
@@ -11,12 +11,12 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import AppBottomSheet from 'src/components/AppBottomSheet';
-import { useEffect } from 'react';
+import StyleSheet from './stylesheet';
+import { useEffect, useState } from 'react';
 
 const MOVER_SIZE = 80;
 const radius = MOVER_SIZE / 2;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
 
 interface ContextProps {
   moverX: number;
@@ -32,14 +32,9 @@ export default function Studio() {
   const context = useSharedValue<ContextProps>({ moverX: 0, moverY: 0, bodyHeight: 0 });
   const moverX = useSharedValue<number>(-radius);
   const moverY = useSharedValue<number>(
-    imageHeight > SCREEN_HEIGHT ? SCREEN_HEIGHT - radius : imageHeight - radius,
+    imageHeight > WINDOW_HEIGHT ? WINDOW_HEIGHT - radius : imageHeight - radius,
   );
-
-  // useEffect(() => {
-  //   moverY.value = withTiming(
-  //     imageHeight > SCREEN_HEIGHT ? SCREEN_HEIGHT - radius : imageHeight - radius,
-  //   );
-  // }, []);
+  const keyboardHeight = useSharedValue<number>(0);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -50,18 +45,15 @@ export default function Studio() {
       };
     })
     .onUpdate((event) => {
-      // console.log(event.translationY);
-      // console.log('%c⧭', 'color: #e50000', Math.max(moverY.value, -SCREEN_HEIGHT));
       moverX.value = event.translationX + context.value.moverX;
       moverY.value = event.translationY + context.value.moverY;
-      // moverY.value = Math.max(moverY.value, -500);
 
       if (moverY.value < -radius) {
         moverY.value = -radius;
       }
 
-      if (moverY.value > SCREEN_HEIGHT - radius) {
-        moverY.value = SCREEN_HEIGHT - radius;
+      if (moverY.value > WINDOW_HEIGHT - radius) {
+        moverY.value = WINDOW_HEIGHT - radius;
       }
 
       if (moverX.value < -radius) {
@@ -75,8 +67,8 @@ export default function Studio() {
       ) {
         moverY.value = withSpring(imageHeight - radius);
       }
-      if (moverX.value > SCREEN_WIDTH - (radius + imageLock)) {
-        moverX.value = withTiming(SCREEN_WIDTH - radius);
+      if (moverX.value > WINDOW_WIDTH - (radius + imageLock)) {
+        moverX.value = withTiming(WINDOW_WIDTH - radius);
       }
       if (moverX.value < radius - imageLock || moverX.value < 0) {
         moverX.value = withTiming(-radius);
@@ -88,17 +80,30 @@ export default function Studio() {
   });
 
   const moverAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: moverX.value }, { translateY: moverY.value }],
-  }));
-
-  const bodyAnimatedStyle = useAnimatedStyle(() => ({
-    height: SCREEN_HEIGHT - (moverY.value + radius),
+    transform: [{ translateX: moverX.value }, { translateY: moverY.value - keyboardHeight.value }],
   }));
 
   const imageAnimatedStyle = useAnimatedStyle(() => ({
     width: moverX.value + radius + scrollX.value,
     minWidth: 0,
   }));
+
+  const bodyAnimatedStyle = useAnimatedStyle(() => ({
+    height: WINDOW_HEIGHT - (moverY.value + radius),
+  }));
+
+  const toggleKeyboard = (e: KeyboardEvent) => {
+    keyboardHeight.value = withTiming(e.endCoordinates.height);
+  };
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', toggleKeyboard);
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', toggleKeyboard);
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   return (
     <View flexG>
@@ -123,8 +128,14 @@ export default function Studio() {
       </GestureDetector>
 
       <ScrollView>
-        <Animated.ScrollView horizontal onScroll={scrollHandler}>
-          <Image source={image} resizeMode="contain" />
+        <Animated.ScrollView
+          horizontal
+          onScroll={scrollHandler}
+          style={{ borderBottomWidth: 1, borderBottomColor: 'grey', borderStyle: 'dashed' }}
+        >
+          <View>
+            <Image source={image} resizeMode="contain" />
+          </View>
 
           <Animated.View
             style={[
@@ -149,7 +160,7 @@ export default function Studio() {
       >
         <Body />
       </Animated.ScrollView>
-      <AppBottomSheet />
+      <StyleSheet />
     </View>
   );
 }
