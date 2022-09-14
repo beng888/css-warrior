@@ -1,38 +1,47 @@
 import 'react-native-url-polyfill/auto';
-import { useState, useEffect } from 'react';
-
-import { Session } from '@supabase/supabase-js';
-import { supabase } from './src/lib/supabase';
-import Canvas from 'src/modules/studio';
-import Auth from 'src/modules/Auth';
-import AndroidSafeArea from 'src/layouts/AndroidSafeArea';
+// import AndroidSafeArea from 'src/layouts/AndroidSafeArea';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Text, View } from 'react-native-ui-lib';
+import { View } from 'react-native-ui-lib';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { Provider } from 'jotai';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import StudioScreen from 'src/screens/studio';
+import Battles from 'src/modules/Battles';
+
+export type RootStackParams = {
+  Home: undefined;
+  Studio: {
+    item: string;
+  };
+};
 
 export default function App() {
   ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
 
-  const [session, setSession] = useState<Session | null>(null);
+  // const [session, setSession] = useState<Session | null>(null);
 
-  useEffect(() => {
-    setSession(supabase.auth.session());
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-  }, []);
+  // useEffect(() => {
+  //   setSession(supabase.auth.session());
+  //   supabase.auth.onAuthStateChange((_event, session) => {
+  //     setSession(session);
+  //   });
+  // }, []);
+
+  const Stack = createNativeStackNavigator<RootStackParams>();
 
   return (
-    <AndroidSafeArea>
-      <GestureHandlerRootView>
-        <View height={'100%'}>
-          <Provider>
-            <Canvas />
-          </Provider>
-        </View>
-        {/* <View height={'100%'}>{session && session.user ? <Canvas /> : <Auth />}</View> */}
-      </GestureHandlerRootView>
-    </AndroidSafeArea>
+    <GestureHandlerRootView>
+      <View height={'100%'}>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+          >
+            <Stack.Screen name="Home" component={Battles} />
+            <Stack.Screen name="Studio" component={StudioScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </View>
+    </GestureHandlerRootView>
   );
 }

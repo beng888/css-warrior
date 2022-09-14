@@ -1,8 +1,26 @@
 {
   "editor.formatOnSave": true,
-  "cSpell.words": ["aftersales", "bgcolor", "Singlife", "testid"],
+  "cSpell.words": [
+    "aftersales",
+    "Amegakure",
+    "Arineo",
+    "Beeee",
+    "bgcolor",
+    "Clow",
+    "Odoo",
+    "Pacman",
+    "plussquareo",
+    "Pokeball",
+    "Ryuk",
+    "Saiyan",
+    "Sharingan",
+    "Singlife",
+    "Sunrays",
+    "testid",
+    "Tetris"
+  ],
   "search.exclude": {
     "**/node_modules": false
   },
-  "search.useIgnoreFiles": false
+  "search.useIgnoreFiles": true
 }

@@ -17,12 +17,17 @@ declare global {
   //   [key: string]: ViewStyle & { children?: DivProps[] };
   // } ;
 
-  type DivMapValue = ViewStyle & { children: DivMap; name?: string };
+  type DivMapValue = ViewStyle & { children: DivMap; name?: string } & {
+    [prop in keyof ViewStyle as `${prop}-default`]?: string | value;
+  };
+
   type DivMap = Map<string, DivMapValue>;
 
   type KeyOfMap<M extends Map<unknown, unknown>> = M extends Map<infer K, unknown> ? K : never;
 
   type DivPosition = 'above' | 'inside' | 'below';
+
+  type MapObject = Record<string, DivMapValue & { children: MapObject }>;
 
   /* --------------------------------- OVERLAY -------------------------------- */
 

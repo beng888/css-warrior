@@ -81,6 +81,48 @@ export function deDupDiv(div: DivMap) {
   );
 }
 
+export function mapToObject(div: DivMap): Record<string, DivMapValue> {
+  const fromEntries: Record<string, DivMapValue> = Object.fromEntries(div);
+  const entries = Object.entries(fromEntries).map(([key, value]) => [
+    key,
+    { ...value, children: mapToObject(value.children) },
+  ]);
+
+  return Object.fromEntries(entries);
+}
+
+export function objectToMap(obj: Record<string, DivMapValue>): DivMap {
+  return new Map(
+    Object.entries(obj).map(([key, value]) => {
+      const { children } = value;
+      return [
+        key,
+        { ...value, children: children instanceof Map ? children : objectToMap(children) },
+      ];
+    }),
+  );
+}
+
+export function mapToArray(div: DivMap): ([string, DivMapValue] | [string, any])[] {
+  return Array.from(div).map((item) => {
+    const [key, value] = item;
+    if (value.children.size > 0) return [key, { ...value, children: mapToArray(value.children) }];
+    return item;
+  });
+}
+
+export function arrayToMap(div: [string, DivMapValue] | [string, any]): DivMap {
+  return new Map(
+    div.map((item) => {
+      const [key, value] = item;
+      if (value.children.length > 0) {
+        return [key, { ...value, children: arrayToMap(value.children) }];
+      }
+      return item;
+    }),
+  );
+}
+
 export function flattenMap(map: DivMap) {
   const flattenedArray: unknown[] = Array.from(map)
     .map(([key, value]) => {
@@ -92,6 +134,15 @@ export function flattenMap(map: DivMap) {
     })
     .flat(2);
   return new Map(flattenedArray as Iterable<[string, DivMapValue]>);
+}
+
+export function flattenObject(obj: Record<string, any>): any {
+  return Object.entries(obj)
+    .map(([key, value]) => {
+      const { children, ...rest } = value;
+      return [[[key, rest]], [...flattenObject(children)]];
+    })
+    .flat(2);
 }
 
 export function insertAtMapIndex(
@@ -110,6 +161,13 @@ export function toNumberElseString(str: string) {
   if (!isNaN(number) && isFinite(number)) return number;
   return str;
 }
+
+export const toSameKeyJson = (obj: Record<string, any>) =>
+  JSON.stringify(
+    Object.fromEntries(
+      flattenObject(obj).map(([, value]: [string, DivMapValue], i: number) => [`map-${i}`, value]),
+    ),
+  );
 
 /* -------------------------------------------------------------------------- */
 /*                                   DRAFTS                                   */

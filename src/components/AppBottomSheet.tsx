@@ -60,7 +60,6 @@ const AppBottomSheet = forwardRef<BottomSheetRefProps, BottomSheetProps>(
         context.value = { y: y.value };
       })
       .onUpdate((event) => {
-        // console.log({ y: y.value, WINDOW_HEIGHT });
         y.value = event.translationY + context.value.y;
         y.value = Math.max(y.value, -WINDOW_HEIGHT);
       })
@@ -81,7 +80,7 @@ const AppBottomSheet = forwardRef<BottomSheetRefProps, BottomSheetProps>(
     }));
 
     const rBackDropStyle = useAnimatedStyle(() => ({
-      opacity: withTiming(open.value ? 0.1 : 0),
+      opacity: withTiming(open.value ? 0.5 : 0),
     }));
 
     const rScrollViewStyle = useAnimatedStyle(() => ({
@@ -93,7 +92,7 @@ const AppBottomSheet = forwardRef<BottomSheetRefProps, BottomSheetProps>(
         {!noBackdrop && (
           <Pressable
             style={{ zIndex: 1200, position: 'absolute' }}
-            pointerEvents={open.value ? 'auto' : 'none'}
+            pointerEvents={visible ? 'auto' : 'none'}
             onPress={() => setOpen(false)}
           >
             <Animated.View
@@ -118,7 +117,7 @@ const AppBottomSheet = forwardRef<BottomSheetRefProps, BottomSheetProps>(
               onLayout={(event) => {
                 sliderHeight.value = event.nativeEvent.layout.height;
               }}
-              height={32}
+              height={40}
               center
               style={{ borderBottomColor: '#ddd', borderBottomWidth: 1 }}
             >

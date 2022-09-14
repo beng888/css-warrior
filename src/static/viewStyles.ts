@@ -1,5 +1,16 @@
 const flexAlignType = ['flex-start', 'flex-end', 'center', 'stretch', 'baseline'];
 
+const border_radius = {
+  borderBottomEndRadius: 'number',
+  borderBottomLeftRadius: 'number',
+  borderBottomRightRadius: 'number',
+  borderBottomStartRadius: 'number',
+  borderTopEndRadius: 'number',
+  borderTopLeftRadius: 'number',
+  borderTopRightRadius: 'number',
+  borderTopStartRadius: 'number',
+};
+
 const border = {
   borderStyle: ['solid', 'dotted', 'dashed'],
   borderBottomWidth: 'number',
@@ -9,22 +20,6 @@ const border = {
   borderStartWidth: 'number',
   borderTopWidth: 'number',
   borderWidth: 'number',
-  borderBottomColor: 'color',
-  borderColor: 'color',
-  borderEndColor: 'color',
-  borderLeftColor: 'color',
-  borderRightColor: 'color',
-  borderStartColor: 'color',
-  borderTopColor: 'color',
-  borderRadius: 'number',
-  borderBottomEndRadius: 'number',
-  borderBottomLeftRadius: 'number',
-  borderBottomRightRadius: 'number',
-  borderBottomStartRadius: 'number',
-  borderTopEndRadius: 'number',
-  borderTopLeftRadius: 'number',
-  borderTopRightRadius: 'number',
-  borderTopStartRadius: 'number',
 };
 
 const padding = {
@@ -94,8 +89,19 @@ const display = {
   display: ['flex', 'none'],
   overflow: ['visible', 'hidden', 'scroll'],
   backfaceVisibility: ['visible', 'hidden'],
-  backgroundColor: 'color',
   opacity: 'number',
+};
+
+const colors = {
+  backgroundColor: 'color',
+  borderBottomColor: 'color',
+  borderColor: 'color',
+  borderEndColor: 'color',
+  borderLeftColor: 'color',
+  borderRightColor: 'color',
+  borderStartColor: 'color',
+  borderTopColor: 'color',
+  borderRadius: 'number',
 };
 
 const transform = {
@@ -114,12 +120,14 @@ const transform = {
 
 const viewStyles = {
   measurement,
+  colors,
   position,
   display,
   flex,
   margin,
   padding,
   border,
+  border_radius,
   transform,
 };
 

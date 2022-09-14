@@ -21,10 +21,15 @@
     "android": {
       "package": "com.lawrence.css_warrior",
       "versionCode": 1,
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       }
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#C2185B",
+      "translucent": false
     },
     "web": {
       "favicon": "./assets/favicon.png"

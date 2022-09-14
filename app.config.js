@@ -22,10 +22,15 @@ export default {
   android: {
     package: 'com.lawrence.css_warrior',
     versionCode: 1,
+    softwareKeyboardLayoutMode: 'pan',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
       backgroundColor: '#FFFFFF',
     },
+  },
+  androidStatusBar: {
+    backgroundColor: '#B2A4D4',
+    translucent: false,
   },
   web: {
     favicon: './assets/favicon.png',
