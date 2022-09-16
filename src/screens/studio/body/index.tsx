@@ -4,7 +4,7 @@ import { useCanvasStore } from 'src/store';
 import { AntDesign } from '@expo/vector-icons';
 
 export default function Body({ ...props }: ViewProps) {
-  const { body, addFirstDiv, currentHistory, history } = useCanvasStore();
+  const { body, addFirstDiv } = useCanvasStore();
 
   return (
     <View paddingR-10 {...props}>

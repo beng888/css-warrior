@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, ViewStyle } from 'react-native';
 import { Hint, Text, View, ViewProps, TouchableOpacity } from 'react-native-ui-lib';
 import AppTextField from 'src/components/AppTextField';
 import { useCanvasStore } from 'src/store';
@@ -148,7 +148,7 @@ export default function BodyDiv2({ value, id, ids = [] }: Props) {
   ids = [...ids, id];
 
   const { showInlineStyles } = settings;
-  const styles = Object.entries(rest).filter(([key]) => !key.includes('default'));
+  const styles = Object.entries(rest as ViewStyle).filter(([key]) => !key.includes('default'));
 
   const handleClose = () => {
     setHintOpen(null);
@@ -164,6 +164,39 @@ export default function BodyDiv2({ value, id, ids = [] }: Props) {
   };
 
   const isActive = hintOpen && activeDivId === id;
+
+  const showStyles = (val: [string, any][]): string => {
+    return val
+      .map(([key, value]) => {
+        if (key === 'transform') {
+          const transformValues = Object.assign({}, ...value);
+
+          const defaultTransformValues = {
+            rotate: '0deg',
+            rotateX: '0deg',
+            rotateY: '0deg',
+            rotateZ: '0deg',
+            scale: 1,
+            scaleX: 1,
+            scaleY: 1,
+            skewX: '0deg',
+            skewY: '0deg',
+            translateX: 0,
+            translateY: 0,
+          };
+
+          type TransformObject = typeof defaultTransformValues;
+
+          const transformDisplayValues = (): [string, any][] =>
+            Object.entries(transformValues).filter(
+              ([key, value]) => defaultTransformValues[key as keyof TransformObject] !== value,
+            );
+          return showStyles(transformDisplayValues());
+        }
+        return ` ${key}='${value}' `;
+      })
+      .join('');
+  };
 
   return (
     <View paddingL-10>
@@ -183,11 +216,7 @@ export default function BodyDiv2({ value, id, ids = [] }: Props) {
               bg-grey20={isActive}
               text70
             >
-              {`<${name}${
-                showInlineStyles
-                  ? styles.map(([key, value]) => ` ${key}='${value}' `).join('')
-                  : ` (${styles.length})`
-              }>`}
+              {`<${name}${showInlineStyles ? showStyles(styles) : ` (${styles.length})`}>`}
             </Text>
           </View>
         </TouchableOpacity>

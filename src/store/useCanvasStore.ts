@@ -117,7 +117,7 @@ interface CanvasState {
   getActiveDivParent(): DivMap;
   addFirstDiv(): void;
   addDiv(position: DivPosition, name: string): void;
-  editDiv(value: Partial<Omit<DivMapValue, 'children'>>): void;
+  editDiv(value: Partial<Omit<DivMapValue, 'children'>> | string): void;
   deleteDiv(): void;
   duplicateDiv(name: string): void;
 }
@@ -345,11 +345,15 @@ const useCanvasStore = create<CanvasState>((set, get) => ({
         .activeDivIds.slice(0, get().activeDivIds.length - 1)
         .map((a) => [a, 'children'])
         .flat();
+
       const parentDiv = getInMap(state.body, parentTree) as DivMap;
-      const parentDivValue = {
-        ...parentDiv.get(get().activeDivId as string),
-        ...value,
-      } as DivMapValue;
+      let parentDivValue = parentDiv.get(get().activeDivId as string) as DivMapValue;
+      if (typeof value === 'string') {
+        delete parentDivValue[value as keyof DivMapValue];
+      } else {
+        parentDivValue = { ...parentDivValue, ...value } as DivMapValue;
+      }
+
       const newDiv = parentDiv.set(get().activeDivId as string, parentDivValue);
 
       return {

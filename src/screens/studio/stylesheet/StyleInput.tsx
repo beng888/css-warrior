@@ -42,7 +42,10 @@ export default function StyleInput({ styleProp, category }: Props) {
   const activeDiv: DivMapValue = getActiveDiv();
 
   const getInitial = () => {
-    const initial = activeDiv[key as keyof ViewStyle];
+    const transform: TransformsStyle['transform'] = activeDiv.transform;
+    const transformValue = transform ? Object.assign({}, ...transform) : {};
+
+    const initial = activeDiv[key as keyof ViewStyle] ?? transformValue[key];
     const _default = activeDiv[`${key}-default` as keyof ViewStyle];
 
     interface IData {
@@ -56,16 +59,17 @@ export default function StyleInput({ styleProp, category }: Props) {
       isPercentage: false,
       default: null,
     };
+
     if (initial) {
       const stringInitial = String(initial);
 
       data.initialValue = stringInitial;
       if (stringInitial.includes('%')) {
-        data.initialValue = stringInitial.split('-')[0] as string;
+        data.initialValue = stringInitial.split('%')[0] as string;
         data.isPercentage = true;
       }
       if (stringInitial.includes('deg')) {
-        data.initialValue = stringInitial.split('-')[0] as string;
+        data.initialValue = stringInitial.split('deg')[0] as string;
       }
     }
 
@@ -88,6 +92,7 @@ export default function StyleInput({ styleProp, category }: Props) {
 
   const getValue = (v: string) => {
     if (isArray) return v;
+    if (isColor) return v;
     if (key.includes('rotate') || key.includes('skew')) {
       if (v === '') return '0deg';
       return `${v}deg`;
@@ -123,7 +128,9 @@ export default function StyleInput({ styleProp, category }: Props) {
     if (other) {
       return editDiv({ [key]: getValue(v), ...other });
     }
-    return editDiv({ [key]: getValue(v) });
+    const value = getValue(v);
+    const isInvalid: boolean = value === 0 || value === '';
+    return editDiv(isInvalid ? key : { [key]: value });
   };
 
   const handleChange = (val: string) => {
@@ -191,13 +198,11 @@ export default function StyleInput({ styleProp, category }: Props) {
           keyboardType={isColor ? 'default' : 'numeric'}
           maxLength={getMaxlength()}
           onEndEditing={() => {
-            if (value !== '') {
-              if (isColor) {
-                if (value.length === 7) return handleSubmit(value);
-                return;
-              }
-              return handleSubmit(value);
+            if (isColor) {
+              if (value.length === 7 || value === '') return handleSubmit(value);
+              return;
             }
+            return handleSubmit(value);
           }}
           leadingAccessory={
             <View paddingL-4 row width="50%">
@@ -281,7 +286,7 @@ export default function StyleInput({ styleProp, category }: Props) {
             if (isArray)
               return (
                 <WheelPicker
-                  items={val.map((v) => ({ label: v, value: v }))}
+                  items={['', ...val].map((v) => ({ label: v, value: v }))}
                   initialValue={value}
                   onChange={(item: string) => setValue(item)}
                 />

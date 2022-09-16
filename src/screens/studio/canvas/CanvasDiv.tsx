@@ -12,6 +12,7 @@ export default function CanvasDiv({ value, id, ids = [] }: Props) {
   const { children, name, ...styles } = value;
   const hasChildren = children.size > 0;
 
+  // console.log('%c⧭', 'color: #00bf00', { styles });
   return (
     <View style={styles}>
       {hasChildren &&
