@@ -1,0 +1,1 @@
+to build apk run "eas build -p android --profile preview"

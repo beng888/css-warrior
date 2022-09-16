@@ -371,23 +371,20 @@ const useCanvasStore = create<CanvasState>((set, get) => ({
     }),
   duplicateDiv: (name) =>
     set((state) => {
-      const childTree = get()
-        .activeDivIds.map((a) => [a, 'children'])
-        .flat();
-      const divChildren = getInMap(state.body, childTree);
       const parentTree: string[] = get()
         .activeDivIds.slice(0, get().activeDivIds.length - 1)
         .map((a) => [a, 'children'])
         .flat();
-      const div = parentTree.length ? getInMap(state.body, parentTree) : state.body;
-      const deDupedDiv = deDupDiv(div as DivMap);
-      const indexArray = Array.from(deDupedDiv).map(([key]) => key);
+      const div = (parentTree.length ? getInMap(state.body, parentTree) : state.body) as DivMap;
+      const deDupedDiv = deDupDiv(div);
+      const indexArray = Array.from(div).map(([key]) => key);
       const index = indexArray.indexOf(get().activeDivId as string);
+
       const newDiv = insertAtMapIndex(
         index + 1,
         uuid.v4() as string,
-        { children: divChildren, name } as DivMapValue,
-        deDupedDiv,
+        { ...Array.from(deDupedDiv)[0]?.[1], name } as DivMapValue,
+        div,
       );
 
       const newBody = (
